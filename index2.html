@@ -1,0 +1,1245 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Trayd | Профессиональная торговая платформа</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0a0c12;
+            color: #eef2ff;
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        /* Auth Modal */
+        .auth-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 3000;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .auth-card {
+            background: linear-gradient(145deg, #151a24, #0f1117);
+            border-radius: 32px;
+            width: 460px;
+            max-width: 90%;
+            padding: 40px 32px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(0, 230, 118, 0.2);
+            animation: slideUp 0.4s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .auth-header {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .auth-logo {
+            font-size: 36px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #00e676, #00c853);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .auth-logo i {
+            background: linear-gradient(135deg, #00e676, #00c853);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            font-size: 32px;
+        }
+
+        .auth-subtitle {
+            color: #8e9aaf;
+            font-size: 14px;
+            margin-top: 8px;
+        }
+
+        .auth-input {
+            width: 100%;
+            padding: 14px 18px;
+            background: #0a0c12;
+            border: 1px solid #2a2f3e;
+            border-radius: 20px;
+            color: #fff;
+            font-size: 15px;
+            margin-bottom: 16px;
+            transition: all 0.2s;
+        }
+
+        .auth-input:focus {
+            outline: none;
+            border-color: #00e676;
+            box-shadow: 0 0 0 3px rgba(0, 230, 118, 0.1);
+        }
+
+        .auth-input::placeholder {
+            color: #5a6a85;
+        }
+
+        .auth-btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #00e676, #00c853);
+            border: none;
+            border-radius: 40px;
+            color: #0a0c12;
+            font-weight: 700;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-top: 8px;
+        }
+
+        .auth-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px -5px rgba(0, 230, 118, 0.3);
+        }
+
+        .auth-switch {
+            text-align: center;
+            margin-top: 24px;
+            color: #8e9aaf;
+            font-size: 13px;
+        }
+
+        .auth-switch span {
+            color: #00e676;
+            cursor: pointer;
+            font-weight: 600;
+            margin-left: 4px;
+        }
+
+        .auth-switch span:hover {
+            text-decoration: underline;
+        }
+
+        .auth-error {
+            color: #ff5252;
+            font-size: 12px;
+            text-align: center;
+            margin-top: 12px;
+            padding: 8px;
+            background: rgba(255, 82, 82, 0.1);
+            border-radius: 12px;
+        }
+
+        .auth-divider {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 24px 0 16px;
+            color: #2a2f3e;
+            font-size: 12px;
+        }
+
+        .auth-divider::before,
+        .auth-divider::after {
+            content: "";
+            flex: 1;
+            height: 1px;
+            background: #2a2f3e;
+        }
+
+        .toast-notification {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: #1e222d;
+            border-left: 4px solid #00e676;
+            padding: 12px 20px;
+            border-radius: 12px;
+            color: #eef2ff;
+            font-size: 13px;
+            z-index: 2500;
+            animation: slideInRight 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(100px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .chart-loader {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 40px;
+            height: 40px;
+            border: 3px solid #2a2f3e;
+            border-top-color: #00e676;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            z-index: 10;
+            background: rgba(10,12,18,0.8);
+        }
+
+        @keyframes spin {
+            to { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+
+        .top-bar {
+            background: #0a0c12;
+            border-bottom: 1px solid #1e222d;
+            padding: 8px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 56px;
+        }
+
+        .logo {
+            font-size: 22px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #00e676, #00c853);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .logo i { color: #00e676; }
+
+        .balance-panel {
+            background: #151a24;
+            padding: 6px 20px;
+            border-radius: 32px;
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .balance-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: #8e9aaf;
+        }
+
+        .balance-amount {
+            font-weight: 700;
+            font-size: 18px;
+            color: #fff;
+        }
+
+        .account-switch {
+            display: flex;
+            gap: 8px;
+            margin-left: 16px;
+        }
+
+        .account-btn {
+            background: #151a24;
+            border: 1px solid #2a2f3e;
+            padding: 6px 16px;
+            border-radius: 24px;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #8e9aaf;
+        }
+
+        .account-btn.active {
+            background: #00e676;
+            border-color: #00e676;
+            color: #0a0c12;
+        }
+
+        .profile-section {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .notification-btn {
+            background: #151a24;
+            border: none;
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            color: #8e9aaf;
+            cursor: pointer;
+            font-size: 18px;
+        }
+
+        .profile-menu {
+            position: relative;
+        }
+
+        .profile-trigger {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: #151a24;
+            padding: 6px 12px 6px 8px;
+            border-radius: 40px;
+            cursor: pointer;
+            border: 1px solid #2a2f3e;
+        }
+
+        .avatar {
+            width: 34px;
+            height: 34px;
+            background: linear-gradient(135deg, #00e676, #00c853);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 14px;
+            color: #0a0c12;
+        }
+
+        .dropdown-menu {
+            position: absolute;
+            top: 50px;
+            right: 0;
+            background: #151a24;
+            border: 1px solid #2a2f3e;
+            border-radius: 16px;
+            width: 300px;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.2s ease;
+            z-index: 1000;
+        }
+
+        .dropdown-menu.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .dropdown-header {
+            padding: 16px;
+            border-bottom: 1px solid #2a2f3e;
+        }
+
+        .dropdown-item {
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            transition: 0.15s;
+            font-size: 13px;
+        }
+
+        .dropdown-item:hover {
+            background: #1e222d;
+            color: #00e676;
+        }
+
+        .logout-item { color: #ff5252; }
+
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+        }
+
+        .modal-content {
+            background: #151a24;
+            border-radius: 24px;
+            padding: 32px;
+            width: 480px;
+            max-height: 90vh;
+            overflow-y: auto;
+            border: 1px solid #2a2f3e;
+        }
+
+        .app-container {
+            display: flex;
+            height: calc(100vh - 56px);
+        }
+
+        .assets-panel {
+            width: 280px;
+            background: #0f1117;
+            border-right: 1px solid #1e222d;
+            overflow-y: auto;
+        }
+
+        .assets-header {
+            padding: 16px 20px;
+            font-weight: 600;
+            border-bottom: 1px solid #1e222d;
+            color: #8e9aaf;
+        }
+
+        .category-title { padding: 12px 20px 8px; font-size: 11px; font-weight: 600; color: #5a6a85; }
+        .asset-row {
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            cursor: pointer;
+            border-left: 3px solid transparent;
+        }
+        .asset-row:hover { background: #1a1e2c; }
+        .asset-row.active { background: #1e2a3a; border-left-color: #00e676; }
+
+        .chart-panel { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+        .chart-header {
+            padding: 12px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #1e222d;
+        }
+        .current-price { font-size: 32px; font-weight: 800; color: #fff; }
+        .price-change.up { color: #00e676; }
+        .price-change.down { color: #ff5252; }
+
+        .timeframe-group {
+            display: flex;
+            gap: 6px;
+            background: #151a24;
+            padding: 4px;
+            border-radius: 32px;
+        }
+        .tf-btn {
+            background: transparent;
+            border: none;
+            padding: 6px 16px;
+            border-radius: 28px;
+            color: #8e9aaf;
+            cursor: pointer;
+        }
+        .tf-btn.active { background: #00e676; color: #0a0c12; }
+
+        .chart-container { flex: 1; padding: 20px; min-height: 0; position: relative; }
+        canvas { width: 100% !important; height: 100% !important; background: #0a0c12; border-radius: 12px; display: block; }
+
+        .trade-panel {
+            width: 360px;
+            background: #0f1117;
+            border-left: 1px solid #1e222d;
+            display: flex;
+            flex-direction: column;
+        }
+        .trade-content { padding: 20px; flex: 1; overflow-y: auto; }
+        .amount-card, .expiry-card {
+            background: #151a24;
+            border-radius: 20px;
+            padding: 16px;
+            margin-bottom: 20px;
+        }
+        .trade-amount-input {
+            background: #0a0c12;
+            border: 1px solid #2a2f3e;
+            padding: 14px;
+            border-radius: 16px;
+            width: 100%;
+            color: white;
+            font-size: 24px;
+            font-weight: 700;
+            text-align: center;
+            margin: 8px 0;
+        }
+        .preset-buttons { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+        .preset {
+            background: #1e222d;
+            border: none;
+            padding: 6px 14px;
+            border-radius: 24px;
+            color: #8e9aaf;
+            cursor: pointer;
+        }
+        .expiry-select {
+            width: 100%;
+            padding: 12px;
+            background: #0a0c12;
+            border: 1px solid #2a2f3e;
+            border-radius: 16px;
+            color: white;
+            margin-top: 8px;
+        }
+        .trade-buttons { display: flex; gap: 12px; margin-bottom: 20px; }
+        .btn-call {
+            flex: 1;
+            background: linear-gradient(135deg, #00e676, #00c853);
+            border: none;
+            padding: 14px;
+            border-radius: 40px;
+            color: #0a0c12;
+            font-weight: 800;
+            cursor: pointer;
+        }
+        .btn-put {
+            flex: 1;
+            background: linear-gradient(135deg, #ff5252, #ff1744);
+            border: none;
+            padding: 14px;
+            border-radius: 40px;
+            color: white;
+            font-weight: 800;
+            cursor: pointer;
+        }
+        .status-card {
+            background: #151a24;
+            border-radius: 16px;
+            padding: 12px;
+            text-align: center;
+            font-size: 13px;
+            color: #ffc107;
+        }
+        .history-section {
+            border-top: 1px solid #1e222d;
+            max-height: 260px;
+            overflow-y: auto;
+        }
+        .history-title {
+            padding: 12px 20px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #8e9aaf;
+            border-bottom: 1px solid #1e222d;
+        }
+        .history-item {
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            border-bottom: 1px solid #1a1e2c;
+        }
+        .history-win { color: #00e676; }
+        .history-loss { color: #ff5252; }
+
+        .active-trade-indicator {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.8);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            z-index: 100;
+        }
+        .active-trade-indicator.up { border-left: 3px solid #00e676; color: #00e676; }
+        .active-trade-indicator.down { border-left: 3px solid #ff5252; color: #ff5252; }
+
+        .payment-method {
+            background: #0a0c12;
+            border: 1px solid #2a2f3e;
+            border-radius: 16px;
+            padding: 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+        .payment-method.selected { border-color: #00e676; background: rgba(0,230,118,0.1); }
+        .amount-input {
+            width: 100%;
+            padding: 14px;
+            background: #0a0c12;
+            border: 1px solid #2a2f3e;
+            border-radius: 12px;
+            color: white;
+            font-size: 20px;
+            text-align: center;
+            margin: 16px 0;
+        }
+        .deposit-btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg,#00e676,#00c853);
+            border: none;
+            border-radius: 40px;
+            color:#0a0c12;
+            font-weight:700;
+            cursor:pointer;
+        }
+        .secondary-btn { background:#2a2f3e !important; margin-top:12px !important; }
+        .info-text { font-size:11px; color:#8e9aaf; text-align:center; margin-top:16px; }
+    </style>
+</head>
+<body>
+<div id="app"></div>
+
+<script>
+    (function() {
+        // Assets data
+        const assets = {
+            "EUR/USD": { price: 1.09250, digits: 5, volatility: 0.002 },
+            "GBP/USD": { price: 1.28430, digits: 5, volatility: 0.002 },
+            "USD/JPY": { price: 148.25, digits: 2, volatility: 0.15 },
+            "BTC/USD": { price: 42580, digits: 0, volatility: 180 },
+            "ETH/USD": { price: 2280, digits: 0, volatility: 35 },
+            "Gold": { price: 2045.30, digits: 1, volatility: 2.5 },
+            "Apple": { price: 175.20, digits: 2, volatility: 1.8 },
+            "Tesla": { price: 238.45, digits: 2, volatility: 3.2 }
+        };
+
+        let currentUser = null;
+        let demoBalance = 10000;
+        let realBalance = 0;
+        let activeAccount = 'demo';
+        let currentAsset = "EUR/USD";
+        let candleData = [];
+        let candlesCount = 20;
+        let activeTrade = null;
+        let canvas = null;
+        let ctx = null;
+        let animationId = null;
+        let lastPrice = assets[currentAsset].price;
+        let updateInterval = null;
+
+        function generateCandle() {
+            const asset = assets[currentAsset];
+            const change = (Math.random() - 0.5) * asset.volatility;
+            const newClose = lastPrice + change;
+            const bodyHigh = Math.max(lastPrice, newClose);
+            const bodyLow = Math.min(lastPrice, newClose);
+            const high = bodyHigh + Math.random() * Math.abs(change) * 0.5;
+            const low = bodyLow - Math.random() * Math.abs(change) * 0.3;
+            const candle = { open: lastPrice, high, low, close: newClose };
+            lastPrice = newClose;
+            assets[currentAsset].price = newClose;
+            return candle;
+        }
+
+        function initCandles() {
+            candleData = [];
+            lastPrice = assets[currentAsset].price;
+            for (let i = 0; i < candlesCount; i++) candleData.push(generateCandle());
+            drawChart();
+            updateUI();
+        }
+
+        function drawChart() {
+            if (!canvas || !ctx) return;
+            const container = canvas.parentElement;
+            const w = container.clientWidth;
+            const h = container.clientHeight;
+            if (w === 0 || h === 0) return;
+            
+            canvas.width = w;
+            canvas.height = h;
+            ctx.clearRect(0, 0, w, h);
+            if (!candleData.length) return;
+            
+            const candleW = Math.max((w - 60) / candleData.length, 2);
+            const startX = 30;
+            let minP = Math.min(...candleData.map(c => c.low));
+            let maxP = Math.max(...candleData.map(c => c.high));
+            const pad = (maxP - minP) * 0.1;
+            minP -= pad;
+            maxP += pad;
+            const range = maxP - minP;
+            const yPos = (price) => h - 30 - ((price - minP) / range) * (h - 60);
+            
+            ctx.strokeStyle = '#1e222d';
+            ctx.fillStyle = '#6c7a8e';
+            ctx.font = '10px Inter';
+            
+            for (let i = 0; i <= 5; i++) {
+                const y = h - 30 - (i / 5) * (h - 60);
+                ctx.beginPath();
+                ctx.moveTo(20, y);
+                ctx.lineTo(w - 10, y);
+                ctx.stroke();
+                const priceValue = minP + (i / 5) * range;
+                ctx.fillText(priceValue.toFixed(assets[currentAsset].digits), 5, y - 2);
+            }
+            
+            for (let i = 0; i < candleData.length; i++) {
+                const c = candleData[i];
+                const x = startX + i * candleW;
+                const bodyW = Math.max(candleW * 0.7, 2);
+                const wickX = x + bodyW / 2;
+                const openY = yPos(c.open);
+                const closeY = yPos(c.close);
+                const highY = yPos(c.high);
+                const lowY = yPos(c.low);
+                const isGreen = c.close > c.open;
+                
+                ctx.fillStyle = isGreen ? '#00e676' : '#ff5252';
+                ctx.strokeStyle = isGreen ? '#00e676' : '#ff5252';
+                ctx.lineWidth = 1.5;
+                
+                ctx.beginPath();
+                ctx.moveTo(wickX, highY);
+                ctx.lineTo(wickX, lowY);
+                ctx.stroke();
+                
+                const bodyH = Math.abs(closeY - openY);
+                const bodyY = Math.min(openY, closeY);
+                ctx.fillRect(x, bodyY, bodyW, Math.max(bodyH, 1));
+            }
+        }
+
+        function smoothUpdate() {
+            const newCandle = generateCandle();
+            candleData.shift();
+            candleData.push(newCandle);
+            drawChart();
+            updateUI();
+        }
+
+        function getCurrentBalance() {
+            return activeAccount === 'demo' ? demoBalance : realBalance;
+        }
+
+        function updateBalanceUI() {
+            const balanceEl = document.getElementById('balanceAmount');
+            if (balanceEl) balanceEl.textContent = getCurrentBalance().toFixed(2);
+            const demoBalanceEl = document.getElementById('demoBalanceAmount');
+            const realBalanceEl = document.getElementById('realBalanceAmount');
+            if (demoBalanceEl) demoBalanceEl.textContent = demoBalance.toFixed(2);
+            if (realBalanceEl) realBalanceEl.textContent = realBalance.toFixed(2);
+        }
+
+        function updateUI() {
+            const asset = assets[currentAsset];
+            const last = candleData[candleData.length - 1];
+            if (last) {
+                const priceEl = document.getElementById('currentPriceDisplay');
+                if (priceEl) priceEl.textContent = last.close.toFixed(asset.digits);
+                const titleEl = document.getElementById('currentAssetTitle');
+                if (titleEl) titleEl.textContent = currentAsset;
+                const change = last.close - last.open;
+                const changePercent = (change / last.open) * 100;
+                const changeEl = document.getElementById('priceChangeDisplay');
+                if (changeEl) {
+                    if (change > 0) {
+                        changeEl.innerHTML = `▲ +${change.toFixed(asset.digits)} (+${changePercent.toFixed(2)}%)`;
+                        changeEl.className = 'price-change up';
+                    } else if (change < 0) {
+                        changeEl.innerHTML = `▼ ${change.toFixed(asset.digits)} (${changePercent.toFixed(2)}%)`;
+                        changeEl.className = 'price-change down';
+                    } else changeEl.innerHTML = `0.00 (0.00%)`;
+                }
+            }
+            for (let key in assets) {
+                const el = document.getElementById(`price_${key.replace('/', '')}`);
+                if (el) el.textContent = assets[key].price.toFixed(assets[key].digits);
+            }
+            updateBalanceUI();
+            
+            const indicator = document.getElementById('activeTradeIndicator');
+            if (indicator && activeTrade) {
+                indicator.style.display = 'block';
+                indicator.className = `active-trade-indicator ${activeTrade.direction === 'up' ? 'up' : 'down'}`;
+                const remaining = Math.ceil((activeTrade.expiryTime - Date.now()) / 1000);
+                indicator.innerHTML = `${activeTrade.direction === 'up' ? '📈 СТАВКА ВВЕРХ' : '📉 СТАВКА ВНИЗ'} | ${activeTrade.amount}$ | Осталось: ${remaining} сек`;
+            } else if (indicator) {
+                indicator.style.display = 'none';
+            }
+        }
+
+        function showToast(message, type = 'info') {
+            const toast = document.createElement('div');
+            toast.className = 'toast-notification';
+            toast.style.borderLeftColor = type === 'win' ? '#00e676' : type === 'loss' ? '#ff5252' : '#ffc107';
+            toast.innerHTML = message;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        function makeTrade(direction) {
+            if (activeTrade) {
+                const statusEl = document.getElementById('tradeStatus');
+                if (statusEl) statusEl.innerHTML = '⏳ Дождитесь завершения текущей сделки!';
+                return;
+            }
+            const amount = parseFloat(document.getElementById('tradeAmount').value);
+            const expirySec = parseInt(document.getElementById('expiryTime').value);
+            const currentBalance = getCurrentBalance();
+            if (isNaN(amount) || amount <= 0 || amount > currentBalance) {
+                const statusEl = document.getElementById('tradeStatus');
+                if (statusEl) statusEl.innerHTML = `⚠️ Неверная сумма или недостаточно средств на ${activeAccount === 'demo' ? 'демо' : 'реальном'} счете!`;
+                return;
+            }
+            
+            if (activeAccount === 'demo') {
+                demoBalance -= amount;
+            } else {
+                realBalance -= amount;
+            }
+            updateBalanceUI();
+            
+            const startPrice = assets[currentAsset].price;
+            activeTrade = {
+                direction, amount, startPrice,
+                expiryTime: Date.now() + expirySec * 1000,
+                asset: currentAsset, expirySec, account: activeAccount
+            };
+            
+            const statusEl = document.getElementById('tradeStatus');
+            if (statusEl) statusEl.innerHTML = `📊 СДЕЛКА ${direction === 'up' ? 'ВВЕРХ ⬆️' : 'ВНИЗ ⬇️'} на ${amount}$ | Экспирация: ${expirySec} сек`;
+            drawChart();
+            
+            const interval = setInterval(() => {
+                if (!activeTrade) {
+                    clearInterval(interval);
+                    return;
+                }
+                if (Date.now() >= activeTrade.expiryTime) {
+                    clearInterval(interval);
+                    const endPrice = assets[currentAsset].price;
+                    const win = activeTrade.direction === 'up' ? endPrice > activeTrade.startPrice : endPrice < activeTrade.startPrice;
+                    const profit = win ? activeTrade.amount * 0.85 : -activeTrade.amount;
+                    
+                    if (activeTrade.account === 'demo') {
+                        demoBalance += activeTrade.amount + profit;
+                    } else {
+                        realBalance += activeTrade.amount + profit;
+                    }
+                    updateBalanceUI();
+                    
+                    if (win) {
+                        showToast(`🎉 Победа! +${profit.toFixed(2)}$`, 'win');
+                    } else {
+                        showToast(`💔 Поражение! ${profit.toFixed(2)}$`, 'loss');
+                    }
+                    
+                    if (currentUser && currentUser.login !== 'demo_user') {
+                        const userData = JSON.parse(localStorage.getItem(`user_${currentUser.login}`) || '{}');
+                        const history = userData.history || [];
+                        history.unshift({
+                            asset: activeTrade.asset, dir: activeTrade.direction, amount: activeTrade.amount,
+                            expiry: activeTrade.expirySec + 'с', result: win ? 'win' : 'loss', profit,
+                            time: new Date().toLocaleTimeString(), account: activeTrade.account
+                        });
+                        if (history.length > 50) history.pop();
+                        userData.history = history;
+                        userData.demoBalance = demoBalance;
+                        userData.realBalance = realBalance;
+                        localStorage.setItem(`user_${currentUser.login}`, JSON.stringify(userData));
+                    }
+                    renderMainHistory();
+                    
+                    if (statusEl) statusEl.innerHTML = win ? `✅ ПОБЕДА! +${profit.toFixed(2)}$` : `❌ ПОРАЖЕНИЕ! ${profit.toFixed(2)}$`;
+                    activeTrade = null;
+                    drawChart();
+                    
+                    setTimeout(() => {
+                        if (statusEl && (statusEl.innerHTML.includes('ПОБЕДА') || statusEl.innerHTML.includes('ПОРАЖЕНИЕ')))
+                            statusEl.innerHTML = '✅ Готов к торговле';
+                    }, 2500);
+                } else {
+                    const rem = Math.ceil((activeTrade.expiryTime - Date.now()) / 1000);
+                    if (statusEl) statusEl.innerHTML = `⏱️ ${activeTrade.direction === 'up' ? '📈 ВВЕРХ' : '📉 ВНИЗ'} ${activeTrade.amount}$ | Осталось: ${rem} сек`;
+                    updateUI();
+                    drawChart();
+                }
+            }, 100);
+            updateUI();
+            drawChart();
+        }
+
+        function switchAccount(account) {
+            activeAccount = account;
+            const demoBtn = document.getElementById('demoAccountBtn');
+            const realBtn = document.getElementById('realAccountBtn');
+            if (demoBtn) demoBtn.classList.toggle('active', account === 'demo');
+            if (realBtn) realBtn.classList.toggle('active', account === 'real');
+            updateBalanceUI();
+            const statusEl = document.getElementById('tradeStatus');
+            if (statusEl) statusEl.innerHTML = `✅ Готов к торговле (${account === 'demo' ? 'ДЕМО-счет' : 'РЕАЛЬНЫЙ счет'})`;
+        }
+
+        function selectAsset(name) {
+            if (animationId) cancelAnimationFrame(animationId);
+            currentAsset = name;
+            lastPrice = assets[currentAsset].price;
+            initCandles();
+            document.querySelectorAll('.asset-row').forEach(el => {
+                if (el.dataset.asset === name) el.classList.add('active');
+                else el.classList.remove('active');
+            });
+            updateUI();
+        }
+
+        function renderMainHistory() {
+            const history = (currentUser && currentUser.login !== 'demo_user') ? 
+                (JSON.parse(localStorage.getItem(`user_${currentUser.login}`) || '{}').history || []) : [];
+            const container = document.getElementById('historyList');
+            if (!container) return;
+            if (!history.length) {
+                container.innerHTML = '<div style="text-align: center; padding: 24px; color: #5a6a85;">Нет сделок</div>';
+                return;
+            }
+            container.innerHTML = history.map(h => `<div class="history-item"><span><strong>${h.asset}</strong> ${h.dir === 'up' ? '⬆️' : '⬇️'} ${h.amount}$ (${h.expiry})</span><span class="${h.result === 'win' ? 'history-win' : 'history-loss'}">${h.result === 'win' ? '+' : ''}${h.profit.toFixed(2)}$</span><span style="color:#6c7a8e;">${h.time}</span></div>`).join('');
+        }
+
+        function showDepositModal() {
+            const modalHtml = `
+                <div class="modal" id="depositModal">
+                    <div class="modal-content">
+                        <h2 style="margin-bottom:24px; color:#00e676;"><i class="fas fa-credit-card"></i> Пополнение счета</h2>
+                        <input type="number" id="depositAmount" class="amount-input" placeholder="Сумма пополнения" value="100" min="1">
+                        <button id="confirmDeposit" class="deposit-btn">Пополнить на 100$</button>
+                        <button id="closeDeposit" class="secondary-btn deposit-btn" style="background:#2a2f3e;">Отмена</button>
+                        <div id="depositMsg" class="info-text" style="margin-top:12px;"></div>
+                    </div>
+                </div>
+            `;
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
+            
+            const amountInput = document.getElementById('depositAmount');
+            const confirmBtn = document.getElementById('confirmDeposit');
+            
+            const updateConfirmText = () => {
+                const val = parseFloat(amountInput.value) || 0;
+                confirmBtn.textContent = `Пополнить на ${val}$`;
+            };
+            amountInput.addEventListener('input', updateConfirmText);
+            updateConfirmText();
+            
+            confirmBtn.onclick = () => {
+                const amount = parseFloat(amountInput.value);
+                if (isNaN(amount) || amount <= 0) {
+                    document.getElementById('depositMsg').textContent = 'Введите корректную сумму';
+                    return;
+                }
+                realBalance += amount;
+                updateBalanceUI();
+                if (currentUser && currentUser.login !== 'demo_user') {
+                    const userData = JSON.parse(localStorage.getItem(`user_${currentUser.login}`) || '{}');
+                    userData.realBalance = realBalance;
+                    localStorage.setItem(`user_${currentUser.login}`, JSON.stringify(userData));
+                }
+                document.getElementById('depositMsg').innerHTML = `✅ Счет пополнен на ${amount}$!`;
+                setTimeout(() => {
+                    const modal = document.getElementById('depositModal');
+                    if (modal) modal.remove();
+                }, 1500);
+            };
+            document.getElementById('closeDeposit').onclick = () => {
+                const modal = document.getElementById('depositModal');
+                if (modal) modal.remove();
+            };
+        }
+
+        function logout() {
+            if (currentUser && currentUser.login !== 'demo_user') {
+                const userData = JSON.parse(localStorage.getItem(`user_${currentUser.login}`) || '{}');
+                userData.demoBalance = demoBalance;
+                userData.realBalance = realBalance;
+                localStorage.setItem(`user_${currentUser.login}`, JSON.stringify(userData));
+            }
+            currentUser = null;
+            if (updateInterval) clearInterval(updateInterval);
+            showAuthModal();
+        }
+
+        function loadMainApp() {
+            const appHtml = `
+                <div class="top-bar">
+                    <div class="logo"><i class="fas fa-chart-line"></i> Trayd</div>
+                    <div class="balance-panel">
+                        <div class="balance-item"><i class="fas fa-wallet"></i> ${activeAccount === 'demo' ? 'ДЕМО' : 'РЕАЛ'}</div>
+                        <div class="balance-item"><span class="balance-amount" id="balanceAmount">${getCurrentBalance().toFixed(2)}</span> USD</div>
+                        <div class="account-switch">
+                            <button class="account-btn demo active" id="demoAccountBtn">🎮 ДЕМО</button>
+                            <button class="account-btn real" id="realAccountBtn">💰 РЕАЛ</button>
+                        </div>
+                    </div>
+                    <div class="profile-section">
+                        <button class="notification-btn" id="notificationBtn"><i class="fas fa-bell"></i></button>
+                        <div class="profile-menu">
+                            <div class="profile-trigger" id="profileTrigger">
+                                <div class="avatar">${currentUser ? (currentUser.name || currentUser.login).charAt(0).toUpperCase() : 'U'}</div>
+                                <span class="profile-name">${currentUser ? (currentUser.name || currentUser.login) : 'Гость'}</span>
+                                <i class="fas fa-chevron-down"></i>
+                            </div>
+                            <div class="dropdown-menu" id="dropdownMenu">
+                                <div class="dropdown-header">
+                                    <div><strong>${currentUser ? (currentUser.name || currentUser.login) : 'Гость'}</strong></div>
+                                    <div style="font-size:11px; color:#8e9aaf;">${currentUser ? (currentUser.email || 'demo@trayd.com') : 'demo@trayd.com'}</div>
+                                    <div style="margin-top:12px; padding-top:8px; border-top:1px solid #2a2f3e;">
+                                        <div>🎮 Демо: <span id="demoBalanceAmount">${demoBalance.toFixed(2)}</span>$</div>
+                                        <div>💰 Реал: <span id="realBalanceAmount">${realBalance.toFixed(2)}</span>$</div>
+                                    </div>
+                                </div>
+                                <div class="dropdown-item" id="depositBtn"><i class="fas fa-plus-circle"></i> Пополнить реальный счет</div>
+                                <div class="dropdown-divider" style="height:1px; background:#2a2f3e; margin:8px 0;"></div>
+                                <div class="dropdown-item logout-item" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Выйти</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="app-container">
+                    <div class="assets-panel">
+                        <div class="assets-header">Активы</div>
+                        <div class="category-title">FOREX</div>
+                        <div class="asset-row" data-asset="EUR/USD"><span>EUR/USD</span><span id="price_EURUSD">1.09250</span></div>
+                        <div class="asset-row" data-asset="GBP/USD"><span>GBP/USD</span><span id="price_GBPUSD">1.28430</span></div>
+                        <div class="asset-row" data-asset="USD/JPY"><span>USD/JPY</span><span id="price_USDJPY">148.25</span></div>
+                        <div class="category-title">CRYPTO</div>
+                        <div class="asset-row" data-asset="BTC/USD"><span>BTC/USD</span><span id="price_BTCUSD">42580</span></div>
+                        <div class="asset-row" data-asset="ETH/USD"><span>ETH/USD</span><span id="price_ETHUSD">2280</span></div>
+                        <div class="category-title">COMMODITIES</div>
+                        <div class="asset-row" data-asset="Gold"><span>Gold</span><span id="price_Gold">2045.30</span></div>
+                        <div class="category-title">STOCKS</div>
+                        <div class="asset-row" data-asset="Apple"><span>Apple</span><span id="price_Apple">175.20</span></div>
+                        <div class="asset-row" data-asset="Tesla"><span>Tesla</span><span id="price_Tesla">238.45</span></div>
+                    </div>
+                    <div class="chart-panel">
+                        <div class="chart-header">
+                            <div><h2 id="currentAssetTitle">EUR/USD</h2><div><span class="current-price" id="currentPriceDisplay">1.09250</span><span id="priceChangeDisplay"></span></div></div>
+                            <div class="timeframe-group">
+                                <button class="tf-btn active" data-candles="20">20</button>
+                                <button class="tf-btn" data-candles="30">30</button>
+                                <button class="tf-btn" data-candles="50">50</button>
+                                <button class="tf-btn" data-candles="100">100</button>
+                            </div>
+                        </div>
+                        <div class="chart-container"><canvas id="candleCanvas"></canvas><div id="activeTradeIndicator" style="display:none;"></div></div>
+                    </div>
+                    <div class="trade-panel">
+                        <div class="trade-content">
+                            <div class="amount-card">
+                                <div>Сумма (USD)</div>
+                                <input type="number" id="tradeAmount" class="trade-amount-input" value="100" step="10">
+                                <div class="preset-buttons">
+                                    <button class="preset" data-amount="10">10</button>
+                                    <button class="preset" data-amount="50">50</button>
+                                    <button class="preset" data-amount="100">100</button>
+                                    <button class="preset" data-amount="500">500</button>
+                                    <button class="preset" data-amount="1000">1000</button>
+                                </div>
+                            </div>
+                            <div class="expiry-card">
+                                <div>Экспирация</div>
+                                <select id="expiryTime" class="expiry-select">
+                                    <option value="3">3 сек</option>
+                                    <option value="5">5 сек</option>
+                                    <option value="15">15 сек</option>
+                                    <option value="30">30 сек</option>
+                                    <option value="60" selected>1 мин</option>
+                                    <option value="120">2 мин</option>
+                                    <option value="300">5 мин</option>
+                                </select>
+                            </div>
+                            <div class="trade-buttons">
+                                <button class="btn-call" id="callBtn">📈 ВВЕРХ</button>
+                                <button class="btn-put" id="putBtn">📉 ВНИЗ</button>
+                            </div>
+                            <div class="status-card" id="tradeStatus">✅ Готов к торговле</div>
+                        </div>
+                        <div class="history-section">
+                            <div class="history-title">История сделок</div>
+                            <div id="historyList">Нет сделок</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.getElementById('app').innerHTML = appHtml;
+            
+            canvas = document.getElementById('candleCanvas');
+            ctx = canvas.getContext('2d');
+            
+            function resizeCanvas() {
+                if (canvas && canvas.parentElement) {
+                    drawChart();
+                }
+            }
+            window.addEventListener('resize', resizeCanvas);
+            
+            initCandles();
+            renderMainHistory();
+            
+            document.getElementById('callBtn').onclick = () => makeTrade('up');
+            document.getElementById('putBtn').onclick = () => makeTrade('down');
+            document.querySelectorAll('.preset').forEach(btn => {
+                btn.onclick = () => { document.getElementById('tradeAmount').value = btn.dataset.amount; };
+            });
+            document.querySelectorAll('.tf-btn').forEach(btn => {
+                btn.onclick = () => {
+                    document.querySelectorAll('.tf-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    candlesCount = parseInt(btn.dataset.candles);
+                    initCandles();
+                };
+            });
+            document.querySelectorAll('.asset-row').forEach(el => {
+                el.onclick = () => selectAsset(el.dataset.asset);
+            });
+            document.getElementById('demoAccountBtn').onclick = () => switchAccount('demo');
+            document.getElementById('realAccountBtn').onclick = () => switchAccount('real');
+            
+            const profileTrigger = document.getElementById('profileTrigger');
+            const dropdownMenu = document.getElementById('dropdownMenu');
+            if (profileTrigger) {
+                profileTrigger.onclick = (e) => { e.stopPropagation(); dropdownMenu.classList.toggle('show'); };
+                document.addEventListener('click', () => dropdownMenu.classList.remove('show'));
+            }
+            document.getElementById('logoutBtn').onclick = () => logout();
+            document.getElementById('depositBtn').onclick = () => showDepositModal();
+            document.getElementById('notificationBtn').onclick = () => showToast('📢 Новых уведомлений нет', 'info');
+            
+            if (updateInterval) clearInterval(updateInterval);
+            updateInterval = setInterval(() => smoothUpdate(), 3000);
+        }
+
+        function showAuthModal() {
+            const authHtml = `
+                <div class="auth-overlay" id="authOverlay">
+                    <div class="auth-card">
+                        <div class="auth-header">
+                            <div class="auth-logo"><i class="fas fa-chart-line"></i> Trayd</div>
+                            <div class="auth-subtitle">Профессиональная торговая платформа</div>
+                        </div>
+                        <div id="authLoginForm">
+                            <input type="text" id="loginUsername" class="auth-input" placeholder="Логин">
+                            <input type="password" id="loginPassword" class="auth-input" placeholder="Пароль">
+                            <button id="loginSubmitBtn" class="auth-btn">Войти в аккаунт</button>
+                            <div class="auth-switch">Нет аккаунта? <span id="showRegisterBtn">Зарегистрироваться</span></div>
+                            <div id="authErrorMsg" class="auth-error"></div>
+                        </div>
+                        <div id="authRegisterForm" style="display: none;">
+                            <input type="text" id="regEmail" class="auth-input" placeholder="Email">
+                            <input type="text" id="regName" class="auth-input" placeholder="Имя">
+                            <input type="tel" id="regPhone" class="auth-input" placeholder="Телефон">
+                            <input type="text" id="regLogin" class="auth-input" placeholder="Логин">
+                            <input type="password" id="regPassword" class="auth-input" placeholder="Пароль">
+                            <button id="registerSubmitBtn" class="auth-btn">Создать аккаунт</button>
+                            <div class="auth-switch">Уже есть аккаунт? <span id="showLoginBtn">Войти</span></div>
+                            <div id="regErrorMsg" class="auth-error"></div>
+                        </div>
+                        <div class="auth-divider">ДЕМО-ДОСТУП</div>
+                        <button id="demoAccessBtn" class="auth-btn" style="background: #2a2f3e; color: #00e676;">🎮 Продолжить без регистрации</button>
+                    </div>
+                </div>
+            `;
+            document.getElementById('app').innerHTML = authHtml;
+            
+            const loginForm = document.getElementById('authLoginForm');
+            const registerForm = document.getElementById('authRegisterForm');
+            const authError = document.getElementById('authErrorMsg');
+            const regError = document.getElementById('regErrorMsg');
+            
+            document.getElementById('showRegisterBtn').onclick = () => {
+                loginForm.style.display = 'none';
+                registerForm.style.display = 'block';
+                if (authError) authError.textContent = '';
+                if (regError) regError.textContent = '';
+            };
+            document.getElementById('showLoginBtn').onclick = () => {
+                registerForm.style.display = 'none';
+                loginForm.style.display = 'block';
+                if (authError) authError.textContent = '';
+                if (regError) regError.textContent = '';
+            };
+            document.getElementById('loginSubmitBtn').onclick = () => {
+                const login = document.getElementById('loginUsername').value.trim();
+                const password = document.getElementById('loginPassword').value;
+                if (!login || !password) {
+                    if (authError) authError.textContent = 'Введите логин и пароль';
+                    return;
+                }
+                const userData = localStorage.getItem(`user_${login}`);
+                if (userData) {
+                    const data = JSON.parse(userData);
+                    if (data.password === password) {
+                        currentUser = { login, password, name: data.name, email: data.email };
+                        demoBalance = data.demoBalance !== undefined ? data.demoBalance : 10000;
+                        realBalance = data.realBalance !== undefined ? data.realBalance : 0;
+                        loadMainApp();
+                    } else {
+                        if (authError) authError.textContent = 'Неверный пароль';
+                    }
+                } else {
+                    if (authError) authError.textContent = 'Пользователь не найден';
+                }
+            };
+            document.getElementById('registerSubmitBtn').onclick = () => {
+                const email = document.getElementById('regEmail').value.trim();
+                const name = document.getElementById('regName').value.trim();
+                const phone = document.getElementById('regPhone').value.trim();
+                const login = document.getElementById('regLogin').value.trim();
+                const password = document.getElementById('regPassword').value;
+                if (!email || !name || !phone || !login || !password) {
+                    if (regError) regError.textContent = 'Заполните все поля';
+                    return;
+                }
+                if (!email.includes('@')) {
+                    if (regError) regError.textContent = 'Введите корректный email';
+                    return;
+                }
+                if (localStorage.getItem(`user_${login}`)) {
+                    if (regError) regError.textContent = 'Пользователь с таким логином уже существует';
+                    return;
+                }
+                const newUser = { login, password, name, email, phone, demoBalance: 10000, realBalance: 0, history: [] };
+                localStorage.setItem(`user_${login}`, JSON.stringify(newUser));
+                currentUser = { login, password, name, email };
+                demoBalance = 10000;
+                realBalance = 0;
+                loadMainApp();
+            };
+            document.getElementById('demoAccessBtn').onclick = () => {
+                currentUser = { login: 'demo_user', name: 'Гость', email: 'demo@trayd.com' };
+                demoBalance = 10000;
+                realBalance = 0;
+                loadMainApp();
+            };
+        }
+        
+        showAuthModal();
+    })();
+</script>
+</body>
+</html>
